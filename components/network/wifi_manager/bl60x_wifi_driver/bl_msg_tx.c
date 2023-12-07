@@ -1,3 +1,32 @@
+/*
+ * Copyright (c) 2016-2023 Bouffalolab.
+ *
+ * This file is part of
+ *     *** Bouffalolab Software Dev Kit ***
+ *      (see www.bouffalolab.com).
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of Bouffalo Lab nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 #include <string.h>
 #include <bl_os_private.h>
 #include <utils_tlv_bl.h>
@@ -775,7 +804,7 @@ int bl_send_sm_connect_req(struct bl_hw *bl_hw, struct cfg80211_connect_params *
     else
         req->ctrl_port_ethertype = ETH_P_PAE;
 #endif
-    req->ctrl_port_ethertype = ETH_P_PAE;
+    req->ctrl_port_ethertype = 0x8e88;
 
     if (sme->bssid && !MAC_ADDR_CMP(sme->bssid, mac_addr_bcst.array) && !MAC_ADDR_CMP(sme->bssid, mac_addr_zero.array)) {
         for (i=0;i<ETH_ALEN;i++)
@@ -783,7 +812,7 @@ int bl_send_sm_connect_req(struct bl_hw *bl_hw, struct cfg80211_connect_params *
     }
     else
         req->bssid = mac_addr_bcst;
-    req->vif_idx = bl_hw->vif_index_sta;
+    req->vif_idx = bl_hw->vif_table[BL_VIF_STA].vif_idx;
     if (sme->channel.center_freq) {
         req->chan.band = sme->channel.band;
         req->chan.freq = sme->channel.center_freq;
@@ -838,7 +867,7 @@ int bl_send_sm_disconnect_req(struct bl_hw *bl_hw)
     }
 
     /* Set parameters for the SM_DISCONNECT_REQ message */
-    req->vif_idx = bl_hw->vif_index_sta;
+    req->vif_idx = bl_hw->vif_table[BL_VIF_STA].vif_idx;
 
     /* Send the SM_DISCONNECT_REQ message to LMAC FW */
     //return bl_send_msg(bl_hw, req, 1, SM_DISCONNECT_IND, NULL);
@@ -856,7 +885,7 @@ int bl_send_sm_connect_abort_req(struct bl_hw *bl_hw, struct sm_connect_abort_cf
         return -ENOMEM;
     }
     /* Set parameters for the SM_CONNECT_ABORT_REQ message */
-    req->vif_idx = bl_hw->vif_index_sta;
+    req->vif_idx = bl_hw->vif_table[BL_VIF_STA].vif_idx;
 
     return bl_send_msg(bl_hw, req, 1, SM_CONNECT_ABORT_CFM, cfm);
 }

@@ -1,10 +1,31 @@
-/**
- ****************************************************************************************
+/*
+ * Copyright (c) 2016-2023 Bouffalolab.
  *
- * @file bl_main.h
- * Copyright (C) Bouffalo Lab 2016-2018
+ * This file is part of
+ *     *** Bouffalolab Software Dev Kit ***
+ *      (see www.bouffalolab.com).
  *
- ****************************************************************************************
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
+ *      and/or other materials provided with the distribution.
+ *   3. Neither the name of Bouffalo Lab nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software
+ *      without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #ifndef __RWNX_MAIN_H__
 #define __RWNX_MAIN_H__
@@ -24,6 +45,8 @@ struct wifi_apm_sta_info
     uint8_t  data_rate;
 };
 
+int bl_main_sta_is_connected(void);
+int bl_main_powersaving_get(void);
 int bl_main_powersaving(int mode);
 int bl_main_denoise(int mode);
 int bl_main_disconnect(void);
@@ -37,8 +60,8 @@ int bl_main_monitor(void);
 int bl_main_monitor_disable(void);
 int bl_main_connect(const uint8_t* ssid, int ssid_len, const uint8_t *psk, int psk_len, const uint8_t *pmk, int pmk_len, const uint8_t *mac, const uint8_t band, const uint16_t freq, const uint32_t flags);
 int bl_main_connect_abort(uint8_t *status);
-int bl_main_apm_start(char *ssid, char *password, int channel, uint8_t vif_index, uint8_t hidden_ssid, uint16_t bcn_int);
-int bl_main_apm_stop(uint8_t vif_index);
+int bl_main_apm_start(char *ssid, char *password, int channel, uint8_t hidden_ssid, uint16_t bcn_int);
+int bl_main_apm_stop(void);
 int bl_main_apm_sta_cnt_get(uint8_t *sta_cnt);
 int bl_main_apm_sta_info_get(struct wifi_apm_sta_info *apm_sta_info, uint8_t idx);
 int bl_main_apm_sta_delete(uint8_t sta_idx);
@@ -110,22 +133,6 @@ typedef struct
     uint8_t   ccmp       : 1;
     uint8_t   rsvd       : 4;
 } wifi_cipher_t;
-
-#define WIFI_EVENT_BEACON_IND_AUTH_OPEN            0
-#define WIFI_EVENT_BEACON_IND_AUTH_WEP             1
-#define WIFI_EVENT_BEACON_IND_AUTH_WPA_PSK         2
-#define WIFI_EVENT_BEACON_IND_AUTH_WPA2_PSK        3
-#define WIFI_EVENT_BEACON_IND_AUTH_WPA_WPA2_PSK    4
-#define WIFI_EVENT_BEACON_IND_AUTH_WPA_ENT         5
-#define WIFI_EVENT_BEACON_IND_AUTH_WPA3_SAE        6
-#define WIFI_EVENT_BEACON_IND_AUTH_WPA2_PSK_WPA3_SAE 7
-#define WIFI_EVENT_BEACON_IND_AUTH_UNKNOWN      0xff
-
-#define WIFI_EVENT_BEACON_IND_CIPHER_NONE           0
-#define WIFI_EVENT_BEACON_IND_CIPHER_WEP            1
-#define WIFI_EVENT_BEACON_IND_CIPHER_AES            2
-#define WIFI_EVENT_BEACON_IND_CIPHER_TKIP           3
-#define WIFI_EVENT_BEACON_IND_CIPHER_TKIP_AES       4
 
 struct wifi_event_beacon_ind
 {
