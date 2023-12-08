@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Bouffalolab.
+ * Copyright (c) 2016-2023 Bouffalolab.
  *
  * This file is part of
  *     *** Bouffalolab Software Dev Kit ***
@@ -276,7 +276,7 @@ exit:
 int bl_usb_cam_transfer(void)
 {
     int ret = 0;
-    uint8_t *pic, *usb_ptr;
+    uint8_t *pic, *usb_ptr, *sdh_img_buffer;
     uint32_t len, first_len, second_len, out_len;
 
     if (tx_flag) {
@@ -295,6 +295,14 @@ int bl_usb_cam_transfer(void)
                 /*mjpeg data not cut*/
                 usb_ptr = pic;
                 csi_dcache_invalid_range((void *)usb_ptr, len);
+            }
+
+            /* save one img to sd card */
+            if (imgbuf_queue) {
+                if (pdTRUE == xQueueReceive(imgbuf_queue, &sdh_img_buffer, 0)) {
+                    memcpy(sdh_img_buffer, usb_ptr, len);
+                    xQueueSend(imglen_queue, &len, 0);
+                }
             }
 
             if (NULL == usb_cam_semap) {

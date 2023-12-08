@@ -27,71 +27,49 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
+#ifdef BL808
+#include <bl808_glb.h>
+#include <bl808_timer.h>
+#elif defined(BL606P)
+#include <bl606p_glb.h>
+#include <bl606p_timer.h>
+#else
+#error "Use CHIP BL808/BL606P for this module"
+#endif
+#include "bl_wdt.h"
 
-#include <stdint.h>
-#include <stddef.h>
+#define BL_WDT_ID         WDT0_ID
+#define BL_WDT_VAL_MAX    (65535)
 
-typedef enum {
-    BL_SHA1,
-    BL_SHA224,
-    BL_SHA256,
-    BL_MD5,
-    BL_SHA384,
-    BL_SHA512,
-} bl_sha_type_t;
-
-/*
- * SHA1/SHA224/SHA256
- */
-/* copied SEC_Eng_SHA256_Ctx from stddrv */
-typedef struct {
-    uint32_t total[2];
-    uint32_t  *shaBuf;
-    uint32_t  *shaPadding;
-    uint32_t linkAddr;
-} bl_SEC_Eng_SHA256_Link_Ctx;
-
-// used for both SHA1/SHA224/SHA256 and SHA512
-typedef struct {
-    uint32_t shaCfgWord;
-    uint32_t shaSrcAddr;                     /*!< Message source address */
-    uint32_t result[16];                      /*!< Result of SHA */
-} __attribute__ ((aligned(4))) bl_SEC_Eng_SHA_Link_Config_Type;
-
-typedef struct bl_sha_ctx {
-    bl_sha_type_t type;
-    bl_SEC_Eng_SHA256_Link_Ctx ctx;
-    bl_SEC_Eng_SHA_Link_Config_Type link_cfg;
-    uint32_t tmp[16];
-    uint32_t pad[16];
-} bl_sha_ctx_t;
-
-
-/*
- * SHA384/512
- */
-// copied SEC_Eng_SHA512_Link_Ctx from stddrv */
-typedef struct
+static void Timer_Watchdog_Case(int ms)
 {
-    uint64_t total[2];    /*!< Number of bytes processed */
-    uint64_t *shaBuf;     /*!< Data not processed but in this temp buffer */
-    uint64_t *shaPadding; /*!< Padding data */
-    uint32_t linkAddr;    /*!< Link configure address */
-} bl_SEC_Eng_SHA512_Link_Ctx;
+    WDT_Disable(BL_WDT_ID);
+    
+    GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_TIMER);
+    WDT_Set_Clock(BL_WDT_ID, TIMER_CLKSRC_32K, 31); 
 
-typedef struct bl_sha512_ctx {
-    bl_sha_type_t type;
-    bl_SEC_Eng_SHA512_Link_Ctx ctx;
-    bl_SEC_Eng_SHA_Link_Config_Type link_cfg;
-    uint64_t tmp[16];
-    uint64_t pad[16];
-} bl_sha512_ctx_t;
+    WDT_SetCompValue(BL_WDT_ID, 1 * ms);
+    WDT_ResetCounterValue(BL_WDT_ID);
+    WDT_IntMask(BL_WDT_ID, WDT_INT, MASK);
 
-/*
- * PSK
- */
-/// Calculate Wi-Fi PSK
-int bl_sec_psk(const char *password, const void *ssid, size_t ssid_len, void *output);
-/// Test PSK
-int bl_sec_psk_test(void);
+    WDT_Enable(BL_WDT_ID);
+}
+
+void bl_wdt_feed(void)
+{
+    WDT_ResetCounterValue(BL_WDT_ID);
+}
+
+void bl_wdt_disable(void)
+{
+    WDT_Disable(BL_WDT_ID);
+}
+
+int bl_wdt_init(int ms)
+{
+    if (ms >= BL_WDT_VAL_MAX) {
+        return -1;
+    }
+    Timer_Watchdog_Case(ms);
+    return 0;
+}

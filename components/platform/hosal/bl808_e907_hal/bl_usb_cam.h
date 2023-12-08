@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Bouffalolab.
+ * Copyright (c) 2016-2023 Bouffalolab.
  *
  * This file is part of
  *     *** Bouffalolab Software Dev Kit ***
@@ -27,9 +27,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __BL_USB_CAM_H__
-#define __BL_USB_CAM_H__
+#ifndef __BL_FLASH_H__
+#define __BL_FLASH_H__
 #include <stdint.h>
+#include <semphr.h>
+#include <queue.h>
 int bl_usb_cam_init(void);
 int bl_usb_cam_transfer(void);
+QueueHandle_t imgbuf_queue;
+QueueHandle_t imglen_queue;
 #endif

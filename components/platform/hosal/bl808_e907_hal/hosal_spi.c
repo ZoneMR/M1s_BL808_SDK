@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Bouffalolab.
+ * Copyright (c) 2016-2023 Bouffalolab.
  *
  * This file is part of
  *     *** Bouffalolab Software Dev Kit ***
@@ -219,7 +219,7 @@ int hosal_spi_finalize(hosal_spi_dev_t *spi)
     return 0;
 }
 
-int hosal_spi_send(hosal_spi_dev_t *spi, const uint8_t *data, uint32_t size, uint32_t timeout)
+int hosal_spi_send(hosal_spi_dev_t *spi, const uint8_t *data, uint16_t size, uint32_t timeout)
 {
     int ret;
 
