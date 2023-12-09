@@ -305,6 +305,10 @@ err_t bl606a0_wifi_netif_init(struct netif *netif)
     return 0;
 }
 
+#ifndef CONFIG_WIFI_HOSTNAME_PREFIX
+#define CONFIG_WIFI_HOSTNAME_PREFIX "Bouffalolab_" BL_CHIP_NAME
+#endif
+
 int bl606a0_wifi_init(wifi_conf_t *conf)
 {
     uint8_t mac[6];
@@ -320,7 +324,8 @@ int bl606a0_wifi_init(wifi_conf_t *conf)
             mac[4],
             mac[5]
     );
-    snprintf(wifiMgmr.hostname, MAX_HOSTNAME_LEN_CHECK, "Bouffalolab_%s-%02x%02x%02x", BL_CHIP_NAME, mac[3], mac[4], mac[5]);
+
+    snprintf(wifiMgmr.hostname, MAX_HOSTNAME_LEN_CHECK, "%s-%02x%02x%02x", CONFIG_WIFI_HOSTNAME_PREFIX, mac[3], mac[4], mac[5]);
     wifiMgmr.hostname[MAX_HOSTNAME_LEN_CHECK - 1] = '\0';
     bl_os_printf("     hostname: %s\r\n", wifiMgmr.hostname);
     bl_msg_update_channel_cfg(conf->country_code);
