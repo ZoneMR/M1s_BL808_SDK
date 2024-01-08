@@ -482,7 +482,6 @@ int bl_audio_start (bl_audio_dev_t *p_dev)
     GLB_Set_DMA_CLK(ENABLE, GLB_DMA0_CLK_CH0);
     GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_DMA_0);
 
-    DMA_Disable(AUDIO_DMA_ID);
     DMA_Channel_Disable(AUDIO_DMA_ID, AUDIO_TX_DMA_CHANNLE);
     DMA_Channel_Disable(AUDIO_DMA_ID, AUDIO_RX_DMA_CHANNLE);
 
@@ -512,12 +511,10 @@ int bl_audio_stop (bl_audio_dev_t *p_dev)
 {
     gp_audio_dac_dev->pingpang = 0;
 
-    DMA_Disable(AUDIO_DMA_ID);
     DMA_Channel_Disable(AUDIO_DMA_ID, AUDIO_TX_DMA_CHANNLE);
     if (p_dev->rx_enable) {
         DMA_Channel_Disable(AUDIO_DMA_ID, AUDIO_RX_DMA_CHANNLE);
     }
-    bl_irq_disable(DMA0_ALL_IRQn);
 
     return 0;
 }
