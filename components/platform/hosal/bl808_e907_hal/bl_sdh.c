@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023 Bouffalolab.
+ * Copyright (c) 2016-2022 Bouffalolab.
  *
  * This file is part of
  *     *** Bouffalolab Software Dev Kit ***
@@ -51,9 +51,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-static uint32_t sdhClockInit = 1000ul;
-static uint32_t sdhClockSrc = 1000ul;
-static uint32_t sdhClockTransfer = 1000ul;
+static uint32_t sdhClockInit = 400000ul;
+static uint32_t sdhClockSrc = 96000000ul;
+static uint32_t sdhClockTransfer = 48000000ul;
 
 static sd_card_t *pSDCardInfo = NULL;
 static SDH_Cfg_Type SDH_Cfg_Type_Instance;
@@ -398,8 +398,6 @@ static void SDH_GPIO_Init(uint32_t bus_wide)
 
 static void SDH_HostInit(void)
 {
-    GLB_Set_SDH_CLK(1, GLB_SDH_CLK_WIFIPLL_96M, 7);
-
     /* initialise SDH controller*/
     SDH_Cfg_Type_Instance.vlot18Enable = DISABLE;
     SDH_Cfg_Type_Instance.highSpeed = ENABLE;
@@ -900,7 +898,6 @@ static status_t SD_SetDataBusWidth(sd_card_t *card, SDH_Data_Bus_Width_Type widt
         goto out;
     }
 
-    GLB_Set_SDH_CLK(1, GLB_SDH_CLK_WIFIPLL_96M, 1);
     /* reinitialise SDH controller*/
     SDH_Cfg_Type_Instance.vlot18Enable = DISABLE;
     SDH_Cfg_Type_Instance.highSpeed = ENABLE;
@@ -1277,6 +1274,8 @@ status_t SDH_Init(uint32_t bus_wide, sd_card_t *pOutCardInfo)
 
 	/* config sdh clock */
 	GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_SDH);
+    GLB_Set_SDH_CLK(1, GLB_SDH_CLK_WIFIPLL_96M, 0);
+	SDH_ClockSet(sdhClockInit, sdhClockSrc, sdhClockTransfer);
 
 #if SDIO_SDCARD_INT_MODE
     SDH_INT_Init();
