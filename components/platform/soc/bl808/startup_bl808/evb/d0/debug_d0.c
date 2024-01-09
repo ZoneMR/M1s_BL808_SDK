@@ -5,7 +5,9 @@
 #include <stdarg.h>
 #include <limits.h>
 
-#define DEFAULT_UART_ID 3
+#define DEFAULT_UART_ID 0
+
+uint32_t debug_uart_id = DEFAULT_UART_ID;
 
 //#define CHAR_BIT	8
 //FIXME no ugly declare
@@ -41,6 +43,11 @@ enum ranks {
 #define PTRDIFF_T_RANK	rank_long
 
 #define EMIT(x) { if (o < n) { *q++ = (x); } o++; }
+
+void debug_uart_id_set(uint8_t id)
+{
+	debug_uart_id = id;
+}
 
 static size_t
 format_int(char *q, size_t n, uintmax_t val, unsigned int flags,
@@ -483,6 +490,7 @@ int __attribute__((optimize("O1"))) vsnprintf(char *buffer, size_t n, const char
 	const char *p = format;
 	char ch;
 	char *q = buffer;
+	char *tmp;
 	size_t o = 0;		/* Number of characters output */
 	uintmax_t val = 0;
 	int rank = rank_int;	/* Default rank */
@@ -787,8 +795,10 @@ int __attribute__((optimize("O1"))) vsnprintf(char *buffer, size_t n, const char
 #ifndef DISABLE_PRINT_FLOAT
 				case 'f':
 					{
+					        tmp = q;
 						q = flt(q, va_arg(ap, double), width, prec, ch, SIGN);
-        		continue;
+					        o += q - tmp;
+						continue;
 					}
 #endif
 				default:	/* Anything else, including % */
@@ -821,6 +831,14 @@ int vsprintf(char *buffer, const char *format, va_list ap)
 
 extern volatile bool sys_log_all_enable;
 
+int __attribute__((weak)) bl_putchar(int c)
+{
+#if !defined(DISABLE_PRINT)
+    bl_uart_data_send(debug_uart_id, c);
+#endif
+    return 0;
+}
+
 void vprint(const char *fmt, va_list argp)
 {
     char *str;
@@ -830,20 +848,10 @@ void vprint(const char *fmt, va_list argp)
         str = string;
         if (0 < vsprintf(string, fmt, argp)) {
             while ('\0' != (ch = *(str++))) {
-#if !defined(DISABLE_PRINT)
-                bl_uart_data_send(DEFAULT_UART_ID, ch);
-#endif
+				bl_putchar(ch);
             }
         }
     }
-}
-
-int bl_putchar(int c)
-{
-#if !defined(DISABLE_PRINT)
-    bl_uart_data_send(DEFAULT_UART_ID, c);
-#endif
-    return 0;
 }
 
 int puts(const char *s)
@@ -853,9 +861,7 @@ int puts(const char *s)
 
     if (sys_log_all_enable) {
         while ('\0' != (c = *(s++))) {
-#if !defined(DISABLE_PRINT)
-            bl_uart_data_send(DEFAULT_UART_ID, c);
-#endif
+			bl_putchar(c);
             counter++;
         }
     }

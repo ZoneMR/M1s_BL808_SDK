@@ -831,6 +831,14 @@ int vsprintf(char *buffer, const char *format, va_list ap)
 
 extern volatile bool sys_log_all_enable;
 
+int __attribute__((weak)) bl_putchar(int c)
+{
+#if !defined(DISABLE_PRINT)
+    bl_uart_data_send(debug_uart_id, c);
+#endif
+    return 0;
+}
+
 void vprint(const char *fmt, va_list argp)
 {
     char *str;
@@ -840,20 +848,10 @@ void vprint(const char *fmt, va_list argp)
         str = string;
         if (0 < vsprintf(string, fmt, argp)) {
             while ('\0' != (ch = *(str++))) {
-#if !defined(DISABLE_PRINT)
-                bl_uart_data_send(debug_uart_id, ch);
-#endif
+				bl_putchar(ch);
             }
         }
     }
-}
-
-int bl_putchar(int c)
-{
-#if !defined(DISABLE_PRINT)
-    bl_uart_data_send(debug_uart_id, c);
-#endif
-    return 0;
 }
 
 int puts(const char *s)
@@ -863,9 +861,7 @@ int puts(const char *s)
 
     if (sys_log_all_enable) {
         while ('\0' != (c = *(s++))) {
-#if !defined(DISABLE_PRINT)
-            bl_uart_data_send(debug_uart_id, c);
-#endif
+			bl_putchar(c);
             counter++;
         }
     }
