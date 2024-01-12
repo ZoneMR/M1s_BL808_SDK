@@ -2023,34 +2023,59 @@ void forward_LOGISTIC_tflite(struct blai_net_info_t* net, struct cpu_inst_layer_
 void forward_SOFTMAX_tflite(struct blai_net_info_t* net, struct cpu_inst_layer_t* l, fixed_point_t* DATA_buf, int l_current) {
     int32_t pass_data = 0;
 
-    int pad_c = l->c;
-    int pad_out_c = l->out_c;
-    if (net->layers[l_current - 1].NPU_on == 1 && net->use_npu_accel == 0)
-        pad_c = (l->c % 4 == 0) ? l->c : ((l->c / 4) + 1) * 4;
+    int input_zero_point = l->tf_input1_offset;
+    float input_scale = l->input_scale;
+    int output_zero_point = l->tf_output_offset;
+    float output_scale = l->output_scale;
 
-     if (l_current != net->layer_cnt - 1 && net->layers[l_current + 1].NPU_on == 1 && net->use_npu_accel == 0)
-        pad_out_c = (l->out_c % 4 == 0) ? l->out_c : ((l->out_c / 4) + 1) * 4;
+    if(!input_scale)
+    {
+        //MR: input_scale isn't set.
+        //    Let's use the output scale from the previous layer.
+        //    Is there a better place we should be looking?
+        input_scale = net->layers[l_current - 1].output_scale;
+    }
 
-    for (int cin = 0; cin < l->c; cin++) {
-        for (int hin = 0; hin < l->h; hin++) {
-            for (int win = 0; win < l->w; win++) {
-                int data_index = hin * l->w * pad_c + win * pad_c + cin;
-                if (net->use_npu_accel)
-                    pass_data = (uint8_t)net->layers[l_current - 1].output_i8[data_index];
-                else
-                    pass_data = (uint8_t)MEM_RW(0, data_index, 0, l->in_layer1_mem, DATA_buf, net->patch_size);
+    float inputs[l->w];
+    float max = -INFINITY;
 
-                int out_index = hin * l->w * pad_out_c + win * pad_out_c + cin;
-                if (net->use_npu_accel)
-                    net->layers[l_current].output_i8[data_index] = pass_data;
-                else
-                    MEM_RW(1, out_index, pass_data, l->out_layer_mem, DATA_buf, net->patch_size);
+    for (int i = 0; i < l->c; i++)
+    {
+        if (net->use_npu_accel)
+            pass_data = (uint8_t)net->layers[l_current - 1].output_i8[i];
+        else
+            pass_data = (uint8_t)MEM_RW(0, i, 0, l->in_layer1_mem, DATA_buf, net->patch_size);
 
-            }
-        }
+        float val = (float)((pass_data - input_zero_point) * input_scale);
+
+        if(val > max)
+            max = val;
+
+        inputs[i] = val;
+
+        //printf("in - %d: val:%f\r\n", i, val);
+    }
+
+    float sum = 0.0;
+    for (int i = 0; i < l->c; i++)
+    {
+        sum += expf(inputs[i] - max);
+    }
+
+    float offset = max + logf(sum);
+    for (int i = 0; i < l->c; i++)
+    {
+        float output = expf(inputs[i] - offset);
+        pass_data = (uint8_t)(output / output_scale + output_zero_point);
+
+        //printf("out - %d: val:%f (%d)\r\n", i, output, pass_data);
+
+        if (net->use_npu_accel)
+            net->layers[l_current].output_i8[i] = pass_data;
+        else
+            MEM_RW(1, i, pass_data, l->out_layer_mem, DATA_buf, net->patch_size);
     }
 }
-
 
 void forward_MATMUL(struct blai_net_info_t* net, struct cpu_inst_layer_t* l, fixed_point_t* DATA_buf, int l_current) {
 
