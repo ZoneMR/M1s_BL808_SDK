@@ -53,7 +53,7 @@
 
 static uint32_t sdhClockInit = 400000ul;
 static uint32_t sdhClockSrc = 96000000ul;
-static uint32_t sdhClockTransfer = 48000000ul;
+static uint32_t sdhClockTransfer = 24000000ul;
 
 static sd_card_t *pSDCardInfo = NULL;
 static SDH_Cfg_Type SDH_Cfg_Type_Instance;
