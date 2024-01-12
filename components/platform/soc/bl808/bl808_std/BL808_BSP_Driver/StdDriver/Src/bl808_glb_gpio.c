@@ -142,6 +142,11 @@ BL_Err_Type ATTR_TCM_SECTION GLB_GPIO_Init(GLB_GPIO_Cfg_Type *cfg)
             tmpVal = BL_CLR_REG_BIT(tmpVal, GLB_REG_GPIO_0_PU);
             tmpVal = BL_CLR_REG_BIT(tmpVal, GLB_REG_GPIO_0_PD);
         }
+        if (gpioPin == GLB_GPIO_PIN_40) {
+            *(uint32_t *)(HBN_BASE + HBN_PAD_CTRL_0_OFFSET) &= ~(1 << 27);
+        } else if (gpioPin == GLB_GPIO_PIN_41) {
+            *(uint32_t *)(HBN_BASE + HBN_PAD_CTRL_0_OFFSET) &= ~(1 << 28);
+        }
     } else {
         /* analog mode */
 
