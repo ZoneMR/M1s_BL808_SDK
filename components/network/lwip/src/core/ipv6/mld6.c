@@ -5,12 +5,12 @@
  * @defgroup mld6 MLD6
  * @ingroup ip6
  * Multicast listener discovery for IPv6. Aims to be compliant with RFC 2710.
- * No support for MLDv2.\n
- * Note: The allnodes (ff01::1, ff02::1) group is assumed be received by your 
+ * No support for MLDv2.<br>
+ * Note: The allnodes (ff01::1, ff02::1) group is assumed be received by your
  * netif since it must always be received for correct IPv6 operation (e.g. SLAAC).
- * Ensure the netif filters are configured accordingly!\n
+ * Ensure the netif filters are configured accordingly!<br>
  * The netif flags also need NETIF_FLAG_MLD6 flag set to enable MLD6 on a
- * netif ("netif->flags |= NETIF_FLAG_MLD6;").\n
+ * netif ("netif->flags |= NETIF_FLAG_MLD6;").<br>
  * To be called from TCPIP thread.
  */
 
@@ -66,10 +66,6 @@
 #include "lwip/netif.h"
 #include "lwip/memp.h"
 #include "lwip/stats.h"
-#ifdef CFG_OTBR_TEST
-#include "lwip/inet.h"
-#include "lwip/sockets.h"
-#endif /* CFG_OTBR_TEST */
 
 #include <string.h>
 
@@ -150,7 +146,7 @@ mld6_lookfor_group(struct netif *ifp, const ip6_addr_t *addr)
   struct mld_group *group = netif_mld6_data(ifp);
 
   while (group != NULL) {
-    if (ip6_addr_cmp(&(group->group_address), addr)) {
+    if (ip6_addr_eq(&(group->group_address), addr)) {
       return group;
     }
     group = group->next;
@@ -257,7 +253,7 @@ mld6_input(struct pbuf *p, struct netif *inp)
       while (group != NULL) {
         if ((!(ip6_addr_ismulticast_iflocal(&(group->group_address)))) &&
             (!(ip6_addr_isallnodes_linklocal(&(group->group_address))))) {
-          mld6_delayed_report(group, mld_hdr->max_resp_delay);
+          mld6_delayed_report(group, lwip_ntohs(mld_hdr->max_resp_delay));
         }
         group = group->next;
       }
@@ -269,7 +265,7 @@ mld6_input(struct pbuf *p, struct netif *inp)
       group = mld6_lookfor_group(inp, ip6_current_dest_addr());
       if (group != NULL) {
         /* Schedule a report. */
-        mld6_delayed_report(group, mld_hdr->max_resp_delay);
+        mld6_delayed_report(group, lwip_ntohs(mld_hdr->max_resp_delay));
       }
     }
     break; /* ICMP6_TYPE_MLQ */
@@ -488,48 +484,6 @@ mld6_leavegroup_netif(struct netif *netif, const ip6_addr_t *groupaddr)
   /* Group not found */
   return ERR_VAL;
 }
-
-#ifdef CFG_OTBR_TEST
-/**
- * @ingroup mld6
- * Leave a group on a network interface.
- *
- * @param netif the network interface which should leave the group.
- * @param groupaddr the ipv6 address of the group to leave (possibly, but not
- *                  necessarily zoned)
- * @return ERR_OK if group was left on the netif, an err_t otherwise
- */
-char*
-mld6_group_info(struct netif *netif)
-{
-  int cnt = 0;
-  char* addrstr;
-
-  struct mld_group *group = netif_mld6_data(netif);
-
-  while (group != NULL) {
-    group = group->next;
-    cnt++;
-  }
-  addrstr = malloc(cnt * (INET6_ADDRSTRLEN+1));
-  if(addrstr == NULL)
-    return NULL;
-  memset(addrstr, 0, cnt * (INET6_ADDRSTRLEN+1));
-
-  group = netif_mld6_data(netif);
-  while (group != NULL) {
-    inet_ntop(AF_INET6, &group->group_address,
-            &addrstr[strlen(addrstr)], INET6_ADDRSTRLEN);
-    addrstr[strlen(addrstr)] = ',';
-    group = group->next;
-  }
-  if(strlen(addrstr) == 0){
-    free(addrstr);
-    return NULL;
-  }
-  return addrstr;
-}
-#endif /* CFG_OTBR_TEST */
 
 
 /**
