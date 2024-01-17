@@ -1404,7 +1404,7 @@ int                              aos_cli_printf(const char *msg, ...)
 }
 #endif
 
-int cli_putstr(char *msg)
+int __attribute__((weak)) cli_putstr(char *msg)
 {
     int len, pos, ret;
 
