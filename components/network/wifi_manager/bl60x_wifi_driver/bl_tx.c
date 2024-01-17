@@ -1,31 +1,10 @@
-/*
- * Copyright (c) 2016-2023 Bouffalolab.
+/**
+ ****************************************************************************************
  *
- * This file is part of
- *     *** Bouffalolab Software Dev Kit ***
- *      (see www.bouffalolab.com).
+ * @file bl_tx.c
+ * Copyright (C) Bouffalo Lab 2016-2018
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *   1. Redistributions of source code must retain the above copyright notice,
- *      this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright notice,
- *      this list of conditions and the following disclaimer in the documentation
- *      and/or other materials provided with the distribution.
- *   3. Neither the name of Bouffalo Lab nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ****************************************************************************************
  */
 
 #include <string.h>
@@ -283,10 +262,6 @@ static void bl_tx_push(struct bl_sta* sta, struct txdesc_host *txdesc_host, void
 
         /* Free pbuf, dont need it anymore */
         pbuf_free(p);
-
-#ifdef CFG_NETBUS_WIFI_ENABLE
-        update_tx_pbuf_free_cnt_to_scratch_reg();
-#endif
     }
     else
     {
@@ -428,6 +403,10 @@ int bl_tx_cfm(void *pthis, void *host_id)
     pbuf_free(p);
 #endif
 
+#ifdef CFG_NETBUS_WIFI_ENABLE
+    update_tx_pbuf_free_cnt_to_scratch_reg();
+#endif
+
     /* Re-trigger this sta tx */
     tx_cntrl_sta_trigger_pending |= BIT_STA(sta->sta_idx);
 
@@ -486,6 +465,7 @@ void bl_tx_try_flush(int param, struct ke_tx_fc *tx_fc_field)
                 if (!txdesc_host)
                 {
                     bl_os_log_warn("[TX] no more txdesc, wait!\n\r");
+                    tx_cntrl_sta_trigger_pending |= BIT_STA(i);
                     break;
                 }
 
@@ -493,6 +473,7 @@ void bl_tx_try_flush(int param, struct ke_tx_fc *tx_fc_field)
                 txhdr = (struct bl_txhdr *)utils_list_pop_front(&sta->pending_list);
                 if (!txhdr)
                 {
+                    tx_cntrl_sta_trigger_pending |= BIT_STA(i);
                     break;
                 }
 
@@ -510,6 +491,7 @@ void bl_tx_try_flush(int param, struct ke_tx_fc *tx_fc_field)
                 if (!txdesc_host)
                 {
                     bl_os_log_warn("[TX] no more txdesc, wait!\n\r");
+                    tx_cntrl_sta_trigger_pending |= BIT_STA(i);
                     break;
                 }
 
@@ -519,6 +501,7 @@ void bl_tx_try_flush(int param, struct ke_tx_fc *tx_fc_field)
                 if (!txbuf)
                 {
                     bl_os_log_warn("[TX] no more txbuf, wait!\n\r");
+                    tx_cntrl_sta_trigger_pending |= BIT_STA(i);
                     break;
                 }
 #endif
@@ -618,12 +601,12 @@ err_t bl_output(struct bl_hw *bl_hw, int is_sta, struct pbuf *p, struct bl_tx_cf
     /* Push packet into waiting_list */
     bl_os_enter_critical();
     utils_list_push_back(&sta->waiting_list, &(txhdr->item));
+    tx_cntrl_sta_trigger |= BIT_STA(sta_id);
     /* Whether trigger irq */
     if (bl_tx_cntrl_check_fc(sta))
     {
         bl_irq_handler();
     }
-    tx_cntrl_sta_trigger |= BIT_STA(sta_id);
     bl_os_exit_critical();
 
     return ERR_OK;

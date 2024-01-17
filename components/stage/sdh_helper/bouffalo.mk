@@ -22,8 +22,7 @@ COMPONENT_PRIV_INCLUDEDIRS := include
                   src/helper_mjpegsd.c \
                   src/helper_avisd.c \
                   src/helper_backtrace.c \
-                  src/helper_aws.c	\
-                  src/helper_netstat.c
+                  src/helper_aws.c
 
 COMPONENT_SRCS = src/helper_sdh.c \
 

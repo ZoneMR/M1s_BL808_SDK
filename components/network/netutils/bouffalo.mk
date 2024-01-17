@@ -10,13 +10,12 @@ COMPONENT_PRIV_INCLUDEDIRS :=
 COMPONENT_SRCS := tcpclient/tcpclient.c \
                 tcpserver/tcpserver.c \
                 iperf/iperf.c \
-                netstat/netstat.c \
                 ping/ping.c \
 
 
 COMPONENT_OBJS := $(patsubst %.c,%.o, $(COMPONENT_SRCS))
 
-COMPONENT_SRCDIRS := tcpclient iperf netstat ping tcpserver
+COMPONENT_SRCDIRS := tcpclient iperf ping tcpserver
 
 
 ##

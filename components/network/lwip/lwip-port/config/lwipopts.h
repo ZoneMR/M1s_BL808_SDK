@@ -77,7 +77,12 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_PBUF           26
 /* MEMP_NUM_UDP_PCB: the number of UDP protocol control blocks. One
    per active UDP "connection". */
+#ifdef OPENTHREAD_BORDER_ROUTER
+#define MEMP_NUM_UDP_PCB        20
+#else
 #define MEMP_NUM_UDP_PCB        6
+#endif
+
 /* MEMP_NUM_TCP_PCB: the number of simulatenously active TCP
    connections. */
 #define MEMP_NUM_TCP_PCB        10
@@ -107,14 +112,11 @@ a lot of data that needs to be copied, this should be set high. */
 #elif defined(CFG_CHIP_BL606P)
 #define PBUF_POOL_SIZE          200
 #else
+
 #if defined(CFG_ETHERNET_ENABLE)
 #define PBUF_POOL_SIZE          12
 #else
-#if defined(CFG_USE_WIFI_BR)
-#define PBUF_POOL_SIZE          16
-#else
 #define PBUF_POOL_SIZE          0
-#endif
 #endif
 #endif /*CFG_ETHERNET_ENABLE*/
 #endif
@@ -239,7 +241,11 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- Statistics options ---------- */
 #define LWIP_STATS 1
+#ifdef OPENTHREAD_BORDER_ROUTER
+#define LWIP_ERRNO_STDINCLUDE 1
+#else
 #define LWIP_PROVIDE_ERRNO 1
+#endif
 
 /* ---------- link callback options ---------- */
 /* LWIP_NETIF_LINK_CALLBACK==1: Support a callback function from an interface
@@ -336,8 +342,6 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCPIP_THREAD_STACKSIZE          512
 #elif defined(CFG_NETBUS_WIFI_ENABLE)
 #define TCPIP_THREAD_STACKSIZE          1536
-#elif defined(CFG_USE_WIFI_BR)
-#define TCPIP_THREAD_STACKSIZE          1536
 #elif defined(CFG_TCPIP_STACKSIZE)
 #define TCPIP_THREAD_STACKSIZE          CFG_TCPIP_STACKSIZE
 #else
@@ -411,6 +415,15 @@ void sys_thread_sem_deinit(void);
 #define LWIP_NETCONN_THREAD_SEM_GET() sys_thread_sem_get()
 #define LWIP_NETCONN_THREAD_SEM_ALLOC() sys_thread_sem_init()
 #define LWIP_NETCONN_THREAD_SEM_FREE() sys_thread_sem_deinit()
+
+#ifndef LP_APP
+#define TCP_TIMER_PRECISE_NEEDED        0
+#define DHCP_TIMER_PRECISE_NEEDED       0
+#define ARP_TIMER_PRECISE_NEEDED        0
+#define IP4_FRAG_TIMER_PRECISE_NEEDED   0
+#define DNS_FRAG_TIMER_PRECISE_NEEDED   0
+#endif
+
 #endif
 
 #endif /* __LWIPOPTS_H__ */
