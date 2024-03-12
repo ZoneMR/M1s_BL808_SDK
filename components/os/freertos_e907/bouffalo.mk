@@ -1,7 +1,7 @@
 
 # Component Makefile
 #
-COMPONENT_ADD_INCLUDEDIRS += include portable/GCC/RISC-V portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions panic misaligned
+COMPONENT_ADD_INCLUDEDIRS += include portable/GCC/RISC-V portable/GCC/RISC-V/chip_specific_extensions/RV32F_float_abi_single panic misaligned
 
 COMPONENT_OBJS := $(patsubst %.c,%.o, \
                     event_groups.c \
