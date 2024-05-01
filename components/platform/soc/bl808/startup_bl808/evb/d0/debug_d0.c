@@ -794,10 +794,11 @@ int __attribute__((optimize("O1"))) vsnprintf(char *buffer, size_t n, const char
 					break;
 #ifndef DISABLE_PRINT_FLOAT
 				case 'f':
+				case 'g':
 					{
-					        tmp = q;
+					    tmp = q;
 						q = flt(q, va_arg(ap, double), width, prec, ch, SIGN);
-					        o += q - tmp;
+					    o += q - tmp;
 						continue;
 					}
 #endif
