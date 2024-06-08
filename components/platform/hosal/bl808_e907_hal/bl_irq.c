@@ -349,7 +349,7 @@ struct{
 int rval_idx;
 #endif /* DBG_RECORD_EXCEP_VAL */
 
-void exception_entry(uint32_t mcause, uint32_t mepc, uint32_t mtval, uintptr_t *regs)
+__attribute__((weak)) void exception_entry(uint32_t mcause, uint32_t mepc, uint32_t mtval, uintptr_t *regs)
 {
 #ifdef DBG_RECORD_EXCEP_VAL
     rval[rval_idx&0x3].mcause = mcause;
