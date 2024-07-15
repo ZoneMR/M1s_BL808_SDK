@@ -19,13 +19,13 @@ typedef struct bl_mtd_handle_priv *bl_mtd_handle_priv_t;
 
 static void __dump_mtd_handle(bl_mtd_handle_priv_t handle_prv)
 {
-    puts(  "[MTD] >>>>>> Hanlde info Dump >>>>>>\r\n");
+    puts(  "[MTD] >>>>>> Handle Info Dump >>>>>>\r\n");
     printf("      name %s\r\n", handle_prv->name);
     printf("      id %d\r\n", handle_prv->id);
     printf("      offset %p(%u)\r\n", (void*)handle_prv->offset, handle_prv->offset);
     printf("      size %p(%uKbytes)\r\n", (void*)handle_prv->size, handle_prv->size/1024);
     printf("      xip_addr %p\r\n", handle_prv->xip_addr);
-    puts(  "[MTD] <<<<<< Hanlde info End <<<<<<\r\n");
+    puts(  "[MTD] <<<<<< Handle Info End <<<<<<\r\n");
 }
 
 static int _mtd_write_copy2ram(uint32_t addr, uint8_t *src, unsigned int len)
