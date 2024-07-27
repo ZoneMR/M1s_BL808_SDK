@@ -2036,7 +2036,7 @@ void forward_SOFTMAX_tflite(struct blai_net_info_t* net, struct cpu_inst_layer_t
         input_scale = net->layers[l_current - 1].output_scale;
     }
 
-    float inputs[l->w];
+    float inputs[l->c];
     float max = -INFINITY;
 
     for (int i = 0; i < l->c; i++)
