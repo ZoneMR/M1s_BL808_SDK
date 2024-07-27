@@ -2066,7 +2066,9 @@ void forward_SOFTMAX_tflite(struct blai_net_info_t* net, struct cpu_inst_layer_t
     for (int i = 0; i < l->c; i++)
     {
         float output = expf(inputs[i] - offset);
-        pass_data = (uint8_t)(output / output_scale + output_zero_point);
+        pass_data = output / output_scale + output_zero_point;
+        pass_data = pass_data > UINT8_MAX ? UINT8_MAX : pass_data;
+        pass_data = pass_data < 0 ? 0 : pass_data;
 
         //printf("out - %d: val:%f (%d)\r\n", i, output, pass_data);
 
