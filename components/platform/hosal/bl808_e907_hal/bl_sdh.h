@@ -33,7 +33,7 @@
 #include "bl808_glb.h"
 #include "bl808_sdh.h"
 
-#define SDIO_CMDTIMEOUT_MS   (100)                  /* time out */
+#define SDIO_CMDTIMEOUT_MS   (350)                  /* time out */
 #define SDH_GET_TIME()  (0)                           /* get time */
 #define SDIO_SDCARD_INT_MODE (0)                    /* Interrupt mode, which can be paired with the OS */
 #define SDH_DEBUG 0                                 /* debug printf */
