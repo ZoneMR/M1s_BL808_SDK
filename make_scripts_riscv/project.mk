@@ -386,7 +386,7 @@ CFLAGS := $(strip \
 	-save-temps=obj
 
 CXXFLAGS := $(strip \
-	-std=c++11 \
+	-std=c++17 \
 	$(OPTIMIZATION_FLAGS) $(DEBUG_FLAGS) \
 	$(COMMON_FLAGS) \
 	$(COMMON_WARNING_FLAGS) \

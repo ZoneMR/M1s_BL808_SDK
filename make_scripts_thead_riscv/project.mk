@@ -364,6 +364,7 @@ CFLAGS := $(strip \
 	-save-temps=obj
 
 CXXFLAGS := $(strip \
+	-std=c++17 \
 	$(CPPFLAGS) \
 	$(OPTIMIZATION_FLAGS) \
 	$(E21_CPU_CFLAGS) \
